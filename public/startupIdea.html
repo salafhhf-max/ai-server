@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<title>AI Startup Idea Generator</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+color:white;
+overflow-x:hidden;
+
+background:linear-gradient(270deg,#1a0d00,#3b1d00,#1a0d00);
+background-size:600% 600%;
+animation:bgmove 12s infinite;
+}
+
+@keyframes bgmove{
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+}
+
+/* stars */
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:-1;
+}
+
+/* sidebar */
+
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+height:100%;
+width:210px;
+background:#140900;
+box-shadow:0 0 25px #f59e0b;
+padding-top:40px;
+}
+
+.sidebar a{
+display:block;
+padding:15px;
+color:white;
+text-decoration:none;
+border-bottom:1px solid #111;
+transition:0.3s;
+}
+
+.sidebar a:hover{
+background:#f59e0b;
+padding-left:25px;
+}
+
+/* main */
+
+.main{
+margin-left:210px;
+text-align:center;
+}
+
+/* container */
+
+.container{
+
+width:700px;
+margin:auto;
+margin-top:60px;
+
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(12px);
+
+border-radius:14px;
+
+padding:35px;
+
+box-shadow:0 0 35px rgba(245,158,11,0.4);
+
+}
+
+/* title */
+
+.title{
+font-size:32px;
+margin-bottom:20px;
+background:linear-gradient(90deg,#f59e0b,#fbbf24);
+-webkit-background-clip:text;
+color:transparent;
+}
+
+/* textarea */
+
+textarea{
+width:100%;
+height:130px;
+background:#140900;
+border:1px solid #f59e0b;
+color:white;
+padding:12px;
+border-radius:6px;
+box-shadow:0 0 15px #f59e0b;
+}
+
+/* select */
+
+select{
+margin-top:12px;
+padding:8px;
+background:#140900;
+color:white;
+border:1px solid #f59e0b;
+}
+
+/* buttons */
+
+button{
+
+margin-top:15px;
+padding:12px 25px;
+
+background:#f59e0b;
+border:none;
+
+color:white;
+
+cursor:pointer;
+
+border-radius:6px;
+
+box-shadow:0 0 10px #f59e0b,0 0 30px #f59e0b;
+
+transition:0.3s;
+
+}
+
+button:hover{
+
+transform:scale(1.05);
+
+box-shadow:0 0 20px #f59e0b,0 0 60px #f59e0b;
+
+}
+
+/* result */
+
+.result{
+
+margin-top:25px;
+
+background:#140900;
+
+border:1px solid #f59e0b;
+
+padding:20px;
+
+border-radius:10px;
+
+text-align:left;
+
+white-space:pre-wrap;
+
+min-height:120px;
+
+}
+
+/* loading */
+
+.loading{
+display:none;
+margin-top:15px;
+}
+
+.dot{
+height:8px;
+width:8px;
+margin:4px;
+background:#f59e0b;
+border-radius:50%;
+display:inline-block;
+animation:blink 1.4s infinite;
+}
+
+@keyframes blink{
+0%{opacity:0.2;}
+50%{opacity:1;}
+100%{opacity:0.2;}
+}
+
+/* tools */
+
+.tools{
+margin-top:15px;
+}
+
+.tools button{
+margin:5px;
+}
+
+/* counter */
+
+.counter{
+margin-top:10px;
+opacity:0.8;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<canvas id="stars"></canvas>
+
+<div class="sidebar">
+
+<a href="dashboard.html">Dashboard</a>
+<a href="resume.html">Resume</a>
+<a href="email.html">Email</a>
+<a href="summary.html">Summary</a>
+<a href="translate.html">Translator</a>
+<a href="idea.html">Startup Idea</a>
+
+</div>
+
+<div class="main">
+
+<div class="container">
+
+<div class="title">AI Startup Idea Generator</div>
+
+<textarea id="input" placeholder="Example: AI tool for students..." oninput="countWords()"></textarea>
+
+<div class="counter">
+Words: <span id="words">0</span>
+</div>
+
+<br>
+
+<select id="type">
+
+<option value="tech">Tech Startup</option>
+<option value="ai">AI Startup</option>
+<option value="mobile">Mobile App</option>
+<option value="ecommerce">E-commerce</option>
+<option value="saas">SaaS</option>
+
+</select>
+
+<select id="scale">
+
+<option value="simple">Simple Idea</option>
+<option value="startup">Startup Level</option>
+<option value="billion">Billion Dollar Idea</option>
+
+</select>
+
+<br>
+
+<button onclick="generate()">
+Generate Idea
+</button>
+
+<button onclick="randomIdea()">
+Random Idea
+</button>
+
+<div class="loading" id="loading">
+
+<span class="dot"></span>
+<span class="dot"></span>
+<span class="dot"></span>
+
+</div>
+
+<div id="result" class="result"></div>
+
+<div class="tools">
+
+<button onclick="copyText()">Copy</button>
+
+<button onclick="download()">Download</button>
+
+<button onclick="speak()">Read</button>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* stars */
+
+const canvas=document.getElementById("stars")
+const ctx=canvas.getContext("2d")
+
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
+
+let stars=[]
+
+for(let i=0;i<200;i++){
+
+stars.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+size:Math.random()*2
+})
+
+}
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+ctx.fillStyle="white"
+
+stars.forEach(s=>{
+ctx.beginPath()
+ctx.arc(s.x,s.y,s.size,0,Math.PI*2)
+ctx.fill()
+})
+
+requestAnimationFrame(draw)
+
+}
+
+draw()
+
+/* counter */
+
+function countWords(){
+
+const text=document.getElementById("input").value
+const words=text.trim().split(/\s+/).filter(w=>w.length>0)
+
+document.getElementById("words").innerText=words.length
+
+}
+
+/* generate */
+
+async function generate(){
+
+const text=document.getElementById("input").value
+const type=document.getElementById("type").value
+const scale=document.getElementById("scale").value
+
+document.getElementById("loading").style.display="block"
+
+const res=await fetch("/ai",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+text:text+" startup type:"+type+" scale:"+scale,
+type:"idea"
+})
+
+})
+
+const data=await res.json()
+
+document.getElementById("loading").style.display="none"
+
+typeEffect(data.result)
+
+}
+
+/* random */
+
+function randomIdea(){
+
+const ideas=[
+"AI fitness coach",
+"AI study assistant",
+"AI job finder",
+"AI travel planner",
+"AI website builder"
+]
+
+document.getElementById("input").value=ideas[Math.floor(Math.random()*ideas.length)]
+
+}
+
+/* typing */
+
+function typeEffect(text){
+
+let i=0
+const el=document.getElementById("result")
+el.innerHTML=""
+
+function typing(){
+
+if(i<text.length){
+
+el.innerHTML+=text.charAt(i)
+i++
+
+setTimeout(typing,15)
+
+}
+
+}
+
+typing()
+
+}
+
+/* copy */
+
+function copyText(){
+
+const text=document.getElementById("result").innerText
+navigator.clipboard.writeText(text)
+
+alert("Copied!")
+
+}
+
+/* download */
+
+function download(){
+
+const text=document.getElementById("result").innerText
+
+const blob=new Blob([text],{type:"text/plain"})
+
+const a=document.createElement("a")
+
+a.href=URL.createObjectURL(blob)
+
+a.download="startup_idea.txt"
+
+a.click()
+
+}
+
+/* speech */
+
+function speak(){
+
+const text=document.getElementById("result").innerText
+
+const speech=new SpeechSynthesisUtterance(text)
+
+speech.lang="en-US"
+
+speechSynthesis.speak(speech)
+
+}
+
+</script>
+
+</body>
+</html>

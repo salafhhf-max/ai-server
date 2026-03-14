@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<title>Settings</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+color:white;
+overflow-x:hidden;
+
+background:linear-gradient(270deg,#0b132b,#1c2541,#0b132b);
+background-size:600% 600%;
+animation:bgmove 12s infinite;
+}
+
+@keyframes bgmove{
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+}
+
+/* stars */
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:-1;
+}
+
+/* container */
+
+.container{
+
+width:520px;
+
+margin:auto;
+
+margin-top:80px;
+
+background:rgba(255,255,255,0.05);
+
+backdrop-filter:blur(12px);
+
+border-radius:15px;
+
+padding:40px;
+
+box-shadow:0 0 35px rgba(58,134,255,0.4);
+
+text-align:center;
+
+}
+
+/* title */
+
+.title{
+font-size:30px;
+margin-bottom:20px;
+background:linear-gradient(90deg,#3a86ff,#4cc9f0);
+-webkit-background-clip:text;
+color:transparent;
+}
+
+/* avatar */
+
+.avatar{
+
+width:90px;
+height:90px;
+
+border-radius:50%;
+
+background:#1c2541;
+
+margin:auto;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-size:30px;
+
+box-shadow:0 0 20px #3a86ff;
+
+margin-bottom:15px;
+
+}
+
+input{
+
+width:100%;
+
+padding:12px;
+
+margin-top:15px;
+
+background:#0b132b;
+
+border:1px solid #3a86ff;
+
+color:white;
+
+border-radius:6px;
+
+}
+
+/* buttons */
+
+button{
+
+margin-top:15px;
+
+padding:12px 25px;
+
+background:#3a86ff;
+
+border:none;
+
+color:white;
+
+cursor:pointer;
+
+border-radius:6px;
+
+box-shadow:0 0 10px #3a86ff,0 0 30px #3a86ff;
+
+transition:0.3s;
+
+}
+
+button:hover{
+
+transform:scale(1.05);
+
+box-shadow:0 0 20px #3a86ff,0 0 60px #3a86ff;
+
+}
+
+/* theme */
+
+select{
+
+margin-top:10px;
+
+padding:8px;
+
+background:#0b132b;
+
+color:white;
+
+border:1px solid #3a86ff;
+
+}
+
+/* stats */
+
+.stats{
+
+margin-top:25px;
+
+background:#0b132b;
+
+padding:15px;
+
+border-radius:10px;
+
+border:1px solid #3a86ff;
+
+}
+
+/* logout */
+
+.logout{
+
+background:#ef4444;
+
+box-shadow:0 0 10px #ef4444,0 0 30px #ef4444;
+
+}
+
+.logout:hover{
+
+box-shadow:0 0 20px #ef4444,0 0 60px #ef4444;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<canvas id="stars"></canvas>
+
+<div class="container">
+
+<div class="title">Account Settings</div>
+
+<div class="avatar" id="avatar">
+👤
+</div>
+
+<input type="file" onchange="uploadAvatar(event)">
+
+<input id="name" placeholder="Change Name">
+
+<input id="email" placeholder="Change Email">
+
+<input id="password" type="password" placeholder="New Password">
+
+<br>
+
+<select id="theme">
+
+<option value="dark">Dark Theme</option>
+<option value="light">Light Theme</option>
+
+</select>
+
+<br>
+
+<button onclick="saveChanges()">
+Save Changes
+</button>
+
+<div class="stats">
+
+<p>AI Requests: <span id="requests">42</span></p>
+
+<p>Tools Used: <span id="tools">5</span></p>
+
+</div>
+
+<button class="logout" onclick="logout()">
+Logout
+</button>
+
+</div>
+
+<script>
+
+/* stars */
+
+const canvas=document.getElementById("stars")
+const ctx=canvas.getContext("2d")
+
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
+
+let stars=[]
+
+for(let i=0;i<200;i++){
+
+stars.push({
+
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+size:Math.random()*2
+
+})
+
+}
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+ctx.fillStyle="white"
+
+stars.forEach(s=>{
+
+ctx.beginPath()
+ctx.arc(s.x,s.y,s.size,0,Math.PI*2)
+ctx.fill()
+
+})
+
+requestAnimationFrame(draw)
+
+}
+
+draw()
+
+/* avatar */
+
+function uploadAvatar(e){
+
+const file=e.target.files[0]
+
+const reader=new FileReader()
+
+reader.onload=function(){
+
+document.getElementById("avatar").style.backgroundImage="url("+reader.result+")"
+document.getElementById("avatar").style.backgroundSize="cover"
+
+}
+
+reader.readAsDataURL(file)
+
+}
+
+/* save */
+
+function saveChanges(){
+
+alert("Changes saved!")
+
+}
+
+/* logout */
+
+function logout(){
+
+window.location.href="login.html"
+
+}
+
+</script>
+
+</body>
+</html>
