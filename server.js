@@ -2,18 +2,36 @@ import express from "express"
 import OpenAI from "openai"
 import dotenv from "dotenv"
 import cors from "cors"
+import rateLimit from "express-rate-limit"
+import helmet from "helmet"
 
 dotenv.config()
 
 const app = express()
 
-app.use(cors())
-app.use(express.json())
+app.use(helmet())
+
+app.use(cors({
+ origin: "*",
+ methods: ["POST"]
+}))
+
+app.use(express.json({limit:"10kb"}))
 app.use(express.static("public"))
+
+const limiter = rateLimit({
+ windowMs: 15 * 60 * 1000,
+ max: 100,
+ message: {error:"Too many requests. Try later."}
+})
+
+app.use("/ai", limiter)
 
 const openai = new OpenAI({
  apiKey: process.env.OPENAI_API_KEY
 })
+
+const usage = {}
 
 async function askAI(prompt){
 
@@ -31,8 +49,24 @@ app.post("/ai", async (req,res)=>{
 
  try{
 
+  const ip = req.ip
+
+  if(!usage[ip]) usage[ip] = 0
+
+  if(usage[ip] >= 50){
+   return res.json({result:"Free limit reached (50 uses)"})
+  }
+
   const text = req.body.text
   const type = req.body.type
+
+  if(!text || text.length < 3){
+   return res.json({result:"Invalid input"})
+  }
+
+  if(text.length > 2000){
+   return res.json({result:"Text too long"})
+  }
 
   let prompt = ""
 
@@ -60,18 +94,32 @@ app.post("/ai", async (req,res)=>{
   if(type==="product")
    prompt=`Write product description for: ${text}`
 
+  if(!prompt){
+   return res.json({result:"Invalid request"})
+  }
+
   const result = await askAI(prompt)
+
+  usage[ip]++
 
   res.json({result})
 
  }catch(err){
 
-  console.log(err)
-  res.json({result:"AI ERROR"})
+  console.error("AI Error:",err)
+
+  res.status(500).json({
+   result:"Server error"
+  })
+
  }
 
 })
 
+app.get("/health",(req,res)=>{
+ res.json({status:"ok"})
+})
+
 app.listen(3000,()=>{
- console.log("AI Server running")
+ console.log("AI Server running on port 3000")
 })
