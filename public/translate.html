@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<title>AI Translator</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+color:white;
+overflow-x:hidden;
+
+background:linear-gradient(270deg,#1f0f05,#3b1d00,#1f0f05);
+background-size:600% 600%;
+animation:bgmove 12s infinite;
+}
+
+@keyframes bgmove{
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+}
+
+/* stars */
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:-1;
+}
+
+/* sidebar */
+
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+height:100%;
+width:210px;
+background:#1f0f05;
+box-shadow:0 0 25px #fb923c;
+padding-top:40px;
+}
+
+.sidebar a{
+display:block;
+padding:15px;
+color:white;
+text-decoration:none;
+border-bottom:1px solid #111;
+transition:0.3s;
+}
+
+.sidebar a:hover{
+background:#fb923c;
+padding-left:25px;
+}
+
+/* main */
+
+.main{
+margin-left:210px;
+text-align:center;
+}
+
+/* container */
+
+.container{
+
+width:700px;
+margin:auto;
+margin-top:60px;
+
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(12px);
+
+border-radius:14px;
+
+padding:35px;
+
+box-shadow:0 0 35px rgba(251,146,60,0.4);
+
+}
+
+/* title */
+
+.title{
+font-size:32px;
+margin-bottom:20px;
+background:linear-gradient(90deg,#fb923c,#fdba74);
+-webkit-background-clip:text;
+color:transparent;
+}
+
+/* textarea */
+
+textarea{
+width:100%;
+height:160px;
+background:#1f0f05;
+border:1px solid #fb923c;
+color:white;
+padding:12px;
+border-radius:6px;
+box-shadow:0 0 15px #fb923c;
+}
+
+/* select */
+
+select{
+margin-top:12px;
+padding:8px;
+background:#1f0f05;
+color:white;
+border:1px solid #fb923c;
+}
+
+/* buttons */
+
+button{
+
+margin-top:15px;
+padding:12px 25px;
+
+background:#fb923c;
+border:none;
+
+color:white;
+
+cursor:pointer;
+
+border-radius:6px;
+
+box-shadow:0 0 10px #fb923c,0 0 30px #fb923c;
+
+transition:0.3s;
+
+}
+
+button:hover{
+
+transform:scale(1.05);
+
+box-shadow:0 0 20px #fb923c,0 0 60px #fb923c;
+
+}
+
+/* result */
+
+.result{
+
+margin-top:25px;
+
+background:#1f0f05;
+
+border:1px solid #fb923c;
+
+padding:20px;
+
+border-radius:10px;
+
+text-align:left;
+
+white-space:pre-wrap;
+
+min-height:120px;
+
+}
+
+/* loading */
+
+.loading{
+display:none;
+margin-top:15px;
+}
+
+.dot{
+height:8px;
+width:8px;
+margin:4px;
+background:#fb923c;
+border-radius:50%;
+display:inline-block;
+animation:blink 1.4s infinite;
+}
+
+@keyframes blink{
+0%{opacity:0.2;}
+50%{opacity:1;}
+100%{opacity:0.2;}
+}
+
+/* tools */
+
+.tools{
+margin-top:15px;
+}
+
+.tools button{
+margin:5px;
+}
+
+/* counter */
+
+.counter{
+margin-top:10px;
+opacity:0.8;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<canvas id="stars"></canvas>
+
+<div class="sidebar">
+
+<a href="dashboard.html">Dashboard</a>
+<a href="resume.html">Resume</a>
+<a href="email.html">Email</a>
+<a href="summary.html">Summary</a>
+<a href="translate.html">Translator</a>
+
+</div>
+
+<div class="main">
+
+<div class="container">
+
+<div class="title">AI Translator</div>
+
+<textarea id="input" placeholder="Enter text..." oninput="countWords()"></textarea>
+
+<div class="counter">
+Words: <span id="words">0</span>
+</div>
+
+<br>
+
+<select id="from">
+<option value="auto">Auto Detect</option>
+<option value="English">English</option>
+<option value="Arabic">Arabic</option>
+<option value="Hebrew">Hebrew</option>
+<option value="Spanish">Spanish</option>
+<option value="French">French</option>
+<option value="German">German</option>
+<option value="Chinese">Chinese</option>
+<option value="Japanese">Japanese</option>
+</select>
+
+<select id="to">
+<option value="Arabic">Arabic</option>
+<option value="English">English</option>
+<option value="Hebrew">Hebrew</option>
+<option value="Spanish">Spanish</option>
+<option value="French">French</option>
+<option value="German">German</option>
+<option value="Chinese">Chinese</option>
+<option value="Japanese">Japanese</option>
+</select>
+
+<br>
+
+<button onclick="swapLang()">Swap</button>
+
+<button onclick="generate()">
+Translate
+</button>
+
+<button onclick="voiceInput()">
+🎤 Speak
+</button>
+
+<div class="loading" id="loading">
+
+<span class="dot"></span>
+<span class="dot"></span>
+<span class="dot"></span>
+
+</div>
+
+<div id="result" class="result"></div>
+
+<div class="tools">
+
+<button onclick="copyText()">Copy</button>
+
+<button onclick="download()">Download</button>
+
+<button onclick="speak()">Read</button>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* stars */
+
+const canvas=document.getElementById("stars")
+const ctx=canvas.getContext("2d")
+
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
+
+let stars=[]
+
+for(let i=0;i<200;i++){
+
+stars.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+size:Math.random()*2
+})
+
+}
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+ctx.fillStyle="white"
+
+stars.forEach(s=>{
+ctx.beginPath()
+ctx.arc(s.x,s.y,s.size,0,Math.PI*2)
+ctx.fill()
+})
+
+requestAnimationFrame(draw)
+
+}
+
+draw()
+
+/* word counter */
+
+function countWords(){
+
+const text=document.getElementById("input").value
+
+const words=text.trim().split(/\s+/).filter(w=>w.length>0)
+
+document.getElementById("words").innerText=words.length
+
+}
+
+/* swap */
+
+function swapLang(){
+
+const from=document.getElementById("from")
+const to=document.getElementById("to")
+
+let temp=from.value
+from.value=to.value
+to.value=temp
+
+}
+
+/* translate */
+
+async function generate(){
+
+const text=document.getElementById("input").value
+const to=document.getElementById("to").value
+
+document.getElementById("loading").style.display="block"
+
+const res=await fetch("/ai",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+text:text+" translate to "+to,
+type:"translate"
+})
+
+})
+
+const data=await res.json()
+
+document.getElementById("loading").style.display="none"
+
+typeEffect(data.result)
+
+}
+
+/* typing */
+
+function typeEffect(text){
+
+let i=0
+
+const el=document.getElementById("result")
+
+el.innerHTML=""
+
+function typing(){
+
+if(i<text.length){
+
+el.innerHTML+=text.charAt(i)
+
+i++
+
+setTimeout(typing,15)
+
+}
+
+}
+
+typing()
+
+}
+
+/* copy */
+
+function copyText(){
+
+const text=document.getElementById("result").innerText
+
+navigator.clipboard.writeText(text)
+
+alert("Copied!")
+
+}
+
+/* download */
+
+function download(){
+
+const text=document.getElementById("result").innerText
+
+const blob=new Blob([text],{type:"text/plain"})
+
+const a=document.createElement("a")
+
+a.href=URL.createObjectURL(blob)
+
+a.download="translation.txt"
+
+a.click()
+
+}
+
+/* speech */
+
+function speak(){
+
+const text=document.getElementById("result").innerText
+
+const speech=new SpeechSynthesisUtterance(text)
+
+speech.lang="en-US"
+
+speechSynthesis.speak(speech)
+
+}
+
+/* voice input */
+
+function voiceInput(){
+
+const recognition=new(window.SpeechRecognition || window.webkitSpeechRecognition)()
+
+recognition.lang="en-US"
+
+recognition.onresult=function(e){
+
+document.getElementById("input").value=e.results[0][0].transcript
+
+}
+
+recognition.start()
+
+}
+
+</script>
+
+</body>
+</html>

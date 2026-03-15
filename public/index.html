@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PromptBox AI</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#020617;
+color:white;
+overflow-x:hidden;
+}
+
+#bg{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+z-index:-1;
+}
+
+/* NAVBAR */
+
+nav{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:20px 60px;
+background:rgba(0,0,0,0.4);
+backdrop-filter:blur(10px);
+position:fixed;
+width:100%;
+z-index:10;
+}
+
+nav a{
+margin-left:25px;
+color:white;
+text-decoration:none;
+font-size:15px;
+}
+
+/* HERO */
+
+.hero{
+padding-top:180px;
+text-align:center;
+max-width:900px;
+margin:auto;
+}
+
+.hero h1{
+
+font-size:72px;
+
+background:linear-gradient(90deg,#38bdf8,#6366f1,#a855f7);
+-webkit-background-clip:text;
+color:transparent;
+
+}
+
+.tagline{
+font-size:24px;
+margin-top:20px;
+height:30px;
+opacity:0.9;
+}
+
+.btn{
+
+margin-top:30px;
+display:inline-block;
+padding:15px 35px;
+
+background:#38bdf8;
+
+border-radius:12px;
+
+box-shadow:0 0 25px #38bdf8;
+
+cursor:pointer;
+
+transition:0.3s;
+text-decoration:none;
+color:white;
+
+}
+
+.btn:hover{
+transform:scale(1.1);
+box-shadow:0 0 60px #38bdf8;
+}
+
+/* TOOLS */
+
+.section{
+margin-top:120px;
+text-align:center;
+}
+
+.features{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:40px;
+margin-top:40px;
+}
+
+.card{
+
+width:260px;
+
+padding:30px;
+
+background:rgba(255,255,255,0.05);
+
+border-radius:15px;
+
+backdrop-filter:blur(12px);
+
+transition:0.4s;
+
+}
+
+.card:hover{
+
+transform:translateY(-10px) scale(1.05);
+
+box-shadow:0 0 40px #38bdf8;
+
+}
+
+.features a{
+text-decoration:none;
+color:white;
+}
+
+/* STATS */
+
+.counter{
+font-size:50px;
+color:#38bdf8;
+}
+
+footer{
+margin-top:120px;
+text-align:center;
+opacity:0.6;
+padding-bottom:40px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:700px){
+
+.hero h1{
+font-size:50px;
+}
+
+nav{
+padding:15px;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<canvas id="bg"></canvas>
+
+<nav>
+
+<h2>PromptBox AI</h2>
+
+<div>
+
+<a href="index.html">Home</a>
+<a href="login.html">Login</a>
+<a href="signup.html">Signup</a>
+<a href="dashboard.html">Dashboard</a>
+
+</div>
+
+</nav>
+
+<div class="hero">
+
+<h1>PromptBox AI</h1>
+
+<div class="tagline" id="tagline"></div>
+
+<a href="aichat.html" class="btn">Open AI Chat</a>
+
+</div>
+
+<div class="section">
+
+<h1>AI Tools</h1>
+
+<div class="features">
+
+<a href="aichat.html"><div class="card"><h3>AI Chat</h3><p>Talk with AI</p></div></a>
+
+<a href="resume.html"><div class="card"><h3>Resume Builder</h3><p>Create resumes</p></div></a>
+
+<a href="email.html"><div class="card"><h3>Email Generator</h3><p>Write emails</p></div></a>
+
+<a href="summary.html"><div class="card"><h3>Text Summarizer</h3><p>Summarize text</p></div></a>
+
+<a href="translate.html"><div class="card"><h3>Translator</h3><p>Translate languages</p></div></a>
+
+<a href="StartupIdea.html"><div class="card"><h3>Startup Ideas</h3><p>Generate ideas</p></div></a>
+
+<a href="tools.html"><div class="card"><h3>All Tools</h3><p>Explore tools</p></div></a>
+
+<a href="settings.html"><div class="card"><h3>Settings</h3><p>Manage account</p></div></a>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h1>Platform Stats</h1>
+
+<div class="counter" id="users">0</div>
+<p>Users</p>
+
+<div class="counter" id="requests">0</div>
+<p>AI Requests</p>
+
+</div>
+
+<footer>
+
+© 2026 PromptBox AI
+
+</footer>
+
+<script>
+
+/* typing animation */
+
+const texts=[
+"Create AI content instantly",
+"Boost productivity with AI",
+"Generate ideas in seconds",
+"Write faster with AI"
+]
+
+let i=0
+let j=0
+let deleting=false
+
+function type(){
+
+let current=texts[i]
+
+if(!deleting){j++}else{j--}
+
+document.getElementById("tagline").innerText=current.substring(0,j)
+
+if(!deleting && j===current.length){
+
+deleting=true
+setTimeout(type,1000)
+return
+
+}
+
+if(deleting && j===0){
+
+deleting=false
+i=(i+1)%texts.length
+
+}
+
+setTimeout(type,deleting?50:100)
+
+}
+
+type()
+
+/* counters */
+
+function counter(id,max){
+
+let el=document.getElementById(id)
+
+let count=0
+
+let interval=setInterval(()=>{
+
+count+=Math.floor(max/100)
+
+if(count>=max){
+
+count=max
+clearInterval(interval)
+
+}
+
+el.innerText=count
+
+},30)
+
+}
+
+counter("users",15324)
+counter("requests",982341)
+
+/* SPACE BACKGROUND */
+
+const scene=new THREE.Scene()
+
+const camera=new THREE.PerspectiveCamera(
+75,
+window.innerWidth/window.innerHeight,
+0.1,
+1000
+)
+
+const renderer=new THREE.WebGLRenderer({
+canvas:document.getElementById("bg"),
+alpha:true
+})
+
+renderer.setSize(window.innerWidth,window.innerHeight)
+
+camera.position.z=5
+
+/* stars */
+
+const starsGeometry=new THREE.BufferGeometry()
+
+const starsCount=20000
+
+const posArray=new Float32Array(starsCount*3)
+
+for(let i=0;i<starsCount*3;i++){
+posArray[i]=(Math.random()-0.5)*2000
+}
+
+starsGeometry.setAttribute(
+'position',
+new THREE.BufferAttribute(posArray,3)
+)
+
+const starsMaterial=new THREE.PointsMaterial({size:0.7})
+
+const starMesh=new THREE.Points(starsGeometry,starsMaterial)
+
+scene.add(starMesh)
+
+/* planets */
+
+const planetGeometry=new THREE.SphereGeometry(3,32,32)
+const planetMaterial=new THREE.MeshStandardMaterial({color:0x3366ff})
+const planet=new THREE.Mesh(planetGeometry,planetMaterial)
+planet.position.set(20,10,-40)
+scene.add(planet)
+
+const planet2Geometry=new THREE.SphereGeometry(2,32,32)
+const planet2Material=new THREE.MeshStandardMaterial({color:0xff5533})
+const planet2=new THREE.Mesh(planet2Geometry,planet2Material)
+planet2.position.set(-20,-5,-30)
+scene.add(planet2)
+
+/* meteor */
+
+const meteorGeometry=new THREE.SphereGeometry(0.5,8,8)
+const meteorMaterial=new THREE.MeshBasicMaterial({color:0xffffff})
+const meteor=new THREE.Mesh(meteorGeometry,meteorMaterial)
+scene.add(meteor)
+
+function spawnMeteor(){
+meteor.position.set(200+Math.random()*100,100+Math.random()*50,-50)
+}
+
+spawnMeteor()
+
+/* light */
+
+const light=new THREE.PointLight(0xffffff,2)
+light.position.set(10,10,10)
+scene.add(light)
+
+/* animation */
+
+function animate(){
+
+requestAnimationFrame(animate)
+
+starsMaterial.size = 0.6 + Math.sin(Date.now()*0.002)*0.2
+
+starMesh.rotation.y+=0.0005
+
+planet.rotation.y+=0.002
+planet.position.x = 20 + Math.sin(Date.now()*0.0005)*5
+
+planet2.rotation.y+=0.001
+planet2.position.y = -5 + Math.cos(Date.now()*0.0007)*3
+
+meteor.position.x -=2
+meteor.position.y -=0.8
+
+if(meteor.position.x < -200){
+spawnMeteor()
+}
+
+camera.position.x = Math.sin(Date.now()*0.0002)*1.5
+camera.position.y = Math.cos(Date.now()*0.0002)*1.5
+
+renderer.render(scene,camera)
+
+}
+
+animate()
+
+/* resize fix */
+
+window.addEventListener("resize",()=>{
+
+camera.aspect=window.innerWidth/window.innerHeight
+camera.updateProjectionMatrix()
+renderer.setSize(window.innerWidth,window.innerHeight)
+
+})
+
+</script>
+
+</body>
+</html>
